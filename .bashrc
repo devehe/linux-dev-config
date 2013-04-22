@@ -3,10 +3,7 @@
 # for examples
 
 # If not running interactively, don't do anything
-case $- in
-    *i*) ;;
-      *) return;;
-esac
+[ -z "$PS1" ] && return
 
 # don't put duplicate lines or lines starting with space in the history.
 # See bash(1) for more options
@@ -31,7 +28,7 @@ shopt -s checkwinsize
 [ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
 
 # set variable identifying the chroot you work in (used in the prompt below)
-if [ -z "${debian_chroot:-}" ] && [ -r /etc/debian_chroot ]; then
+if [ -z "$debian_chroot" ] && [ -r /etc/debian_chroot ]; then
     debian_chroot=$(cat /etc/debian_chroot)
 fi
 
@@ -105,14 +102,87 @@ fi
 # enable programmable completion features (you don't need to enable
 # this, if it's already enabled in /etc/bash.bashrc and /etc/profile
 # sources /etc/bash.bashrc).
-if ! shopt -oq posix; then
-  if [ -f /usr/share/bash-completion/bash_completion ]; then
-    . /usr/share/bash-completion/bash_completion
-  elif [ -f /etc/bash_completion ]; then
+if [ -f /etc/bash_completion ] && ! shopt -oq posix; then
     . /etc/bash_completion
-  fi
 fi
 
 
-#export PATH=/home/hehg/bin:$PATH
+
+
+
+source ~/.git-completion.bash
+
+#PS1="\[\e[1;33;40m\]\u@\H \[\e[1;34;40m\]\w \[\e[1;32;40m\]\$git_branch\[\e[1;31;40m\]\$\[\e[0m\] "
+#PS1='[\u@\h \W$(__git_ps1 " (%s)")]\$ '
+PS1='\[\e[1;33;40m\]\u@\H \[\e[1;34;40m\]\w\[\e[1;32;40m\]$(__git_ps1 " (%s)")\[\e[1;31;40m\]\$\[\e[0m\] '
+
+# for JAVA SDK
+export JAVA_HOME=/opt/jdk1.6.0_33
+export PATH=$JAVA_HOME/bin:$PATH
+export CLASSPATH=.:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar
+
+
+# User specific aliases and functions
+export PATH=/opt/lzma4.32/bin:/opt/buildroot-gcc342/bin:$PATH
+
+# repo
+export PATH=~/bin:$PATH
+
+# SDCC
+#export PATH=/opt/sdcc/bin:$PATH
+export PATH=~/sdcc/bin:$PATH
+
+###############################################
+# Python for Android
+export ANDROIDNDK=/opt/android-ndk-r8b
+export ANDROIDSDK=/opt/android-sdk-linux
+export ANDROIDNDKVER=r8b
+export ANDROIDAPI=20
+#export PATH=$ANDROIDNDK:$ANDROIDSDK/tools:$PATH
+#export PATH=/opt/android-ndk-r8b/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin:$PATH
+
+# for android tools
+export ARCH=arm
+export CROSS_COMPILE=arm-none-linux-gnueabi-
+#export PATH=/opt/arm-2010q1/bin:~/proj50/4AI.1.7/u-boot/tools:$PATH
+export PATH=/opt/arm-2010q1/bin:$PATH
+# for adb, fastboot
+#export PATH=~/proj-t50/4AI.1.7/mydroid/out/host/linux-x86/bin:$PATH
+export PATH=$PATH:~/proj-t50/4AI.1.7/mydroid/out/host/linux-x86/bin
+# for mkimage
+export PATH=$PATH:~/proj-t50/4AI.1.7/u-boot/tools
+
+## [add.hehg.20110108]
+find_git_branch() {
+    local dir=. head
+    until [ "$dir" -ef / ]; do
+        if [ -f "$dir/.git/HEAD" ]; then
+            head=$(< "$dir/.git/HEAD")
+            if [[ $head = ref:\ refs/heads/* ]]; then
+                ##git_branch="|${head#*/*/}"
+                git_branch="${head#*/*/}"
+            elif [[ $head != '' ]]; then
+                git_branch="(detached)"
+            else
+                git_branch="(unknown)"
+            fi  
+            return
+        fi  
+        dir="../$dir"
+    done
+    git_branch=''
+}
+
+PROMPT_COMMAND="find_git_branch; $PROMPT_COMMAND"
+#PS1="\[\e[1;33;40m\][\[\e[1;37;40m\u@\H\] \[\e[1;34;40m\]\w \[\e[1;32;40m\]\$git_branch\[\e[1;33;40m\]]\[\e[1;31;40m\]\$\[\e[0m\] "
+
+######PS1="\[\e[1;33;40m\]\u@\H \[\e[1;34;40m\]\w \[\e[1;32;40m\]\$git_branch\[\e[1;31;40m\]\$\[\e[0m\] "
+
+#PS1="[\34\u@\39\h:\w\$git_branch]\$ "
+#PS1="\[ \033[0;32;40m\u@\h:\w\$ \033[0m \]" 
+#PS1="\[\033[0;37;44m\u@\033[0;32;43m\h:\033[0;33;41m\w$\033[0m\]"
+#PS1="\[\033[1;34;40m[\033[1;31;40m\u@\h:\w\033[1;34;40m]\033[1;37;40m $\033[0;37;0m\] "
+#PS1="\[\e[36;1m\]\u@\[\e[32;1m\]\H> \[\e[0m\]"
+
+## [add.hehg.end]
 
